@@ -1,0 +1,68 @@
+ACI,EN,FR,ClasseEPOQ,Code
+10,Cloud,Nuage,nuage,NUA
+20,Water,Eau,Eau,WAT
+30,Exposed Land and Barren,Sols Nus et terres stériles,Sols Nus et terres stériles,SNE
+34,Urban and Developed,Milieu urbain / bâti,Milieu urbain / bâti,URB
+35,Greenhouses,Serres,Agricole,AGR
+50,Shrubland,Arbustaie,Petits arbres,PAR
+80,Wetland,Terres humides,Terres humides,WET
+110,Grassland,Prairies,Prairies,PRA
+120,Agriculture (undifferentiated),Agriculture (indifférenciée),Agricole,AGR
+122,Pasture and Forages,Pâturage /cultures fourragères,Prairies,PRA
+130,Too Wet to be Seeded,Trop humide pour ensemencement,Agricole,AGR
+121,Fallow,Jachère,Agricole,AGR
+132,Cereals,Céréales,Agricole,AGR
+133,Barley,Orge,Agricole,AGR
+134,Other Grains,Autres céréales,Agricole,AGR
+135,Millet,Millet,Agricole,AGR
+136,Oats,Avoine,Agricole,AGR
+137,Rye,Seigle,Agricole,AGR
+138,Spelt,Épeautre,Agricole,AGR
+139,Triticale,Tricticale,Agricole,AGR
+140,Wheat,Blé,Agricole,AGR
+141,Switchgrass,Panic érigé,Agricole,AGR
+142,Sorghum,Sorgho,Agricole,AGR
+145,Winter Wheat,Blé d'hiver,Agricole,AGR
+146,Spring Wheat,Blé de printemps,Agricole,AGR
+147,Corn,Maîs,Agricole,AGR
+148,Tobacco,Tabac,Agricole,AGR
+149,Ginseng,Ginseng,Agricole,AGR
+150, ,Oléagineux,Agricole,AGR
+151,Borage,Bourrache,Agricole,AGR
+152,Camelina,Caméline,Agricole,AGR
+153,Canola and Rapeseed,Canola/Colza,Agricole,AGR
+154,Flaxseed,Lin,Agricole,AGR
+155,Mustard,Moutarde,Agricole,AGR
+156,Safflower,Carthame,Agricole,AGR
+157,Sunflower,Tournesol,Agricole,AGR
+158,Soybeans,Soya,Agricole,AGR
+160,Pulses,Légumineuses,Agricole,AGR
+162,Peas,Pois,Agricole,AGR
+167,Beans,Haricots,Agricole,AGR
+174,Lentils,Lentilles,Agricole,AGR
+175,Vegetables,Légumes,Agricole,AGR
+176,Tomatoes,Tomates,Agricole,AGR
+177,Potatoes,Pomme de terre,Agricole,AGR
+178,Sugarbeets,Betteraves à sucre,Agricole,AGR
+179,Other Vegetables,Autres légumes,Agricole,AGR
+180,Fruits,Fruits,Agricole,AGR
+181,Berries,Petits fruits,Agricole,AGR
+182,Blueberry,Bleuets,Agricole,AGR
+183,Cranberry,Canneberge,Agricole,AGR
+185,Other Berry,Autres baies,Agricole,AGR
+188,Orchards,Vergers,Agricole,AGR
+189,Other Fruits,Autres fruits,Agricole,AGR
+190,Vineyards,Vignobles,Agricole,AGR
+191,Hops,Houblon,Agricole,AGR
+192,Sod,Gazon en plaques,prairies,PRA
+193,Herbs,Fines herbes,prairies,PRA
+194,Nursery,pépinières,Petits arbres,PAR
+195,Buckwheat,sarrasin,Agricole,AGR
+196,Canaryseed,graines de canaries,Agricole,AGR
+197,Hemp,Chanvre,Agricole,AGR
+198,Vetch,vesce,Agricole,AGR
+199,Other Crops,autres cultures,Agricole,AGR
+200,Forest (undifferentiated),Forêt (indifférencié),Forêt mixte,FMX
+210,Coniferous,forêt de connifère,Forêt connifère,FCO
+220,Broadleaf,forêt de feuillus,Forêt feuillus,FFE
+230,Mixedwood,forêt mixte,Forêt mixte,FMX
