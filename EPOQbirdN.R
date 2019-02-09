@@ -39,7 +39,7 @@ species<-names(d)[g] # species names
 ### change NAs to 0s (the data.table way)
 
 for(sp in species){ 
-	 set(d,i=which(is.na(d[[sp]])),j=sp, value=0)
+	 set(d,i=which(is.na(d[[sp]])),j=sp,value=0)
 }
 
 ###################################
@@ -144,6 +144,8 @@ visreg(m,scale="response")
 #################################
 ### variog from previous models
 
+### don't run, can be slow!
+
 dxs<-dx
 coordinates(dxs)<-~lon+lat
 proj4string(dxs)<-"+init=epsg:4326"
@@ -158,22 +160,74 @@ plot(v, main = "Variogram for spatial autocorrelation (LFY, fire occurrence)",ty
 #######################################
 ### open canada raster data
 
+
+### ACI code conversion
+aci<-read.csv("https://raw.githubusercontent.com/frousseu/EPOQbirdN/master/CodeACI.csv",stringsAsFactors=FALSE)
+
+
+### ACI data from Open Canada
 # http://www.agr.gc.ca/atlas/data_donnees/agr/annualCropInventory/tif/2015/
 r<-raster("C:/Users/User/Documents/Antoinette/aci_2015_qc/aci_2015_qc.tif")
 r<-crop(r,extent(spTransform(locs,CRS(proj4string(r)))))
+#plot(r)
+#plot(spTransform(locs,CRS(proj4string(r))),add=TRUE,pch=1)
 
-plot(r)
-plot(spTransform(locs,CRS(proj4string(r))),add=TRUE,pch=1)
 
-g<-st_make_grid(st_as_sf(as(extent(r),"SpatialPolygons")),cell=1000)
+##################################
+### build grid with approcximate half size of cells in lat/lon
+w<-0.0165/2
+cells<-SpatialPolygons(apply(apply(coordinates(locs),1,function(r){cbind(r+c(w,w),r+c(w,-w),r+c(-w,-w),r+c(-w,w),r+c(w,w))}),2,function(v){Polygons(list(Polygon(matrix(v,ncol=2,byrow=TRUE))),ID=runif(1))}))
+proj4string(cells)<-proj4string(locs)
+cells<-spTransform(cells,CRS(proj4string(r)))
+#cells<-st_make_grid(st_as_sf(as(extent(r),"SpatialPolygons")),cell=1000)
+#plot(cells)
+
+
+####################################
+### extract pixels
 v<-velox(r)
-e<-v$extract(g)
+e<-v$extract(cells)
+le<-lapply(e,function(i){
+  tab<-table(i[,1])	
+  as.data.frame(rbind(tab/sum(tab)))
+})
 
 
+##########################################################
+### bind cells data and fill unrepresented classes
+
+lu<-rbindlist(le,fill=TRUE)
+for(i in names(lu)){ 
+	 set(lu,i=which(is.na(lu[[i]])),j=i,value=0)
+}
+names(lu)<-aci$Code[match(names(lu),aci$ACI)]
 
 
- 
+############################################################
+### combine columns of the same classes with an ugly hack (should use something with data.table
+clu<-unique(names(lu))
+temp<-list()
+for(i in seq_along(clu)){
+	 m<-which(names(lu)%in%clu[i])
+	 if(length(m)>1){
+    temp[[i]]<-rowSums(lu[,..m])
+	 }else{
+	   temp[[i]]<-lu[[m]]	
+	 }
+}
+lu<-do.call("data.table",temp)
+names(lu)<-clu
+lu$cell<-locs$cell
+table(rowSums(lu),useNA="ifany")
 
+
+####################################
+### add data to the locs data and to the data
+
+locs@data<-cbind(locs@data,lu)
+plot(locs,pch=16,cex=locs$AGR*2)
+
+d<-merge(d,lu)
 
 
 
