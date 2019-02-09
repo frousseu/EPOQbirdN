@@ -30,10 +30,17 @@ g<-grep("Esp_",names(d)) # which columns are species, to be used later
 
 #################################
 ### use species name
-codes<-as.data.frame(read_excel("C:/Users/User/Documents/Antoinette/BasededonneesEPOQ.xlsx",sheet="Feuil1"))
-names(d)[match(codes[,1],names(d))]<-gsub(" ","_",codes[,2]) # replace species codes with names
+codes<-read.csv("https://raw.githubusercontent.com/frousseu/EPOQbirdN/master/CodeEPOQ.csv")
+names(d)[match(codes[,"Nom_Var"],names(d))]<-gsub(" ","_",codes[,"CodeFR"]) # replace species codes with names
 
 species<-names(d)[g] # species names
+
+###############################################
+### change NAs to 0s (the data.table way)
+
+for(sp in species){ 
+	 set(d,i=which(is.na(d[[sp]])),j=sp, value=0)
+}
 
 ###################################
 ### checks nb records per species
@@ -48,6 +55,8 @@ legend("topleft",legend=c("  0",">0"),fill=c("darkred","darkgreen"),cex=3,bty="n
 	
 ############################
 ### checks NAs per species
+
+### now, supposed to be none
 
 n<-sapply(g,function(i){
 	length(which(is.na(d[,..i])))
@@ -71,7 +80,7 @@ plot(locs,cex=as.numeric(gsub(",",".",locs$"%BatiResidentiel"))/100*2,pch=16)
 
 #########################################
 ### look at data distribution
-sp<-"Song_sparrow"
+sp<-"BRCH"
 hist(log(d[[sp]]))
 plot(d$date,d[[sp]],col=gray(0.5,0.25),pch=16)
 
