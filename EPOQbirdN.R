@@ -124,21 +124,40 @@ for(i in seq_along(species)){
 #####################################################
 ### Simple models
 
-### look at data distribution
-sp<-"Common_starling"
+sp<-"BRCH"
 
 dx<-d[d$year%in%c(2002:2015),]
 dx<-dx[sample(1:nrow(dx),10000),]
 vars<-c("jul")
 
-f<-as.formula(paste(sp,"~",paste(vars,collapse="+")))
+f<-as.formula(paste(sp,"~","s(jul,bs=\"cc\")+te(lon,lat)"))
 
-m<-glm(Song_sparrow~poly(jul,6),data=dx,family=negative.binomial(3))
-m<-gam(Common_starling~s(jul,bs="cc"),data=dx,family=nb)
+m<-gam(f,data=dx,family=nb)
 summary(m)
 
 par(mfrow=c(1,1))
-visreg(m,scale="response")
+#visreg(m,scale="response")
+
+visreg2d(m,"lon","lat",scale="response")
+points(dx$lon,dx$lat,cex=10*(dx[[sp]]+0.5)/max(dx[[sp]]))
+
+
+#####################################################
+### multi species models 
+
+dx<-d[d$year%in%c(2002:2015),]
+dx<-dx[sample(1:nrow(dx),5000),]
+dx<-melt(dx,measure.vars=species,variable.name = "species", value.name = "count")
+dx<-dx[dx$Mangeoire==0,]
+dx<-dx[dx$species%in%c("BRCH","BRFM","PAJA","MOCH","PACO","VIYR","VIME"),]
+
+m<-gam(count~s(jul,by=species,bs="cc"),data=dx,family=nb)
+summary(m)
+
+par(mfrow=c(1,1))
+visreg(m,"jul",by="species",scale="response",overlay=TRUE)
+
+
 
 
 #################################
@@ -151,9 +170,9 @@ coordinates(dxs)<-~lon+lat
 proj4string(dxs)<-"+init=epsg:4326"
 dxs<-spTransform(dxs,CRS("+init=epsg:26917"))
 coords <- coordinates(dxs)
-v<-variog(coords=coords,data=resid(m),breaks=seq(0,50000,by=2000),max.dist=50000,bin.cloud=TRUE)
-par(mfrow=c(1,1))
-plot(v, main = "Variogram for spatial autocorrelation (LFY, fire occurrence)",type="b")
+# v<-variog(coords=coords,data=resid(m),breaks=seq(0,50000,by=2000),max.dist=50000,bin.cloud=TRUE)
+# par(mfrow=c(1,1))
+# plot(v, main = "Variogram for spatial autocorrelation (LFY, fire occurrence)",type="b")
 
 
 
