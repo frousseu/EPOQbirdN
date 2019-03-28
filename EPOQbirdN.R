@@ -154,13 +154,21 @@ aci<-read.csv("https://raw.githubusercontent.com/frousseu/EPOQbirdN/master/CodeA
 
 ### ACI data from Open Canada
 # http://www.agr.gc.ca/atlas/data_donnees/agr/annualCropInventory/tif/2015/
-r<-raster("C:/Users/rouf1703/Downloads/aci_2015_qc/aci_2015_qc.tif")
-r<-crop(r,extend(extent(spTransform(locs,CRS(proj4string(r)))),c(5000,5000,5000,5000)))
+r2015<-raster("C:/Users/rouf1703/Downloads/aci_2015_qc/aci_2015_qc.tif")
+r2015<-crop(r2015,extend(extent(spTransform(locs,CRS(proj4string(r2015)))),c(5000,5000,5000,5000)))
+
+
+r2011<-raster("C:/Users/rouf1703/Downloads/aci_2011_qc/aci_2011_qc.tif")
+r2011<-crop(r2011,extend(extent(spTransform(locs,CRS(proj4string(r2011)))),c(5000,5000,5000,5000)))
+
+r<-stack(r2011,r2015)
+luy<-c(2011,2015)
+names(r)<-luy
 
 
 ### visualize LU types
 # silenced because slow
-#rr<-ratify(r)
+#rr<-ratify(subset(r,1)
 #rr<-subs(r,aci[,c("ACI","Code")]) ### slow and memory hungry!
 #cols<-c("grey90","cadetblue1","grey20","grey70","lightgoldenrod","chocolate","brown","goldenrod","chartreuse3","darkgreen","chartreuse1")
 #levels(rr)[[1]]$cols<-cols
@@ -191,58 +199,73 @@ cells<-spTransform(cells,CRS(proj4string(r)))
 #cells<-st_make_grid(st_as_sf(as(extent(r),"SpatialPolygons")),cell=1000)
 #plot(cells)
 
+lus<-vector(mode="list",length=nlayers(r))
+names(lus)<-names(r)
 
-####################################
-### extract pixels
-v<-velox(r)
-e<-v$extract(cells)
-le<-lapply(e,function(i){
-  tab<-table(i[,1])	
-  as.data.frame(rbind(tab/sum(tab)))
-})
+for(y in 1:nlayers(r)){
 
+  ####################################
+  ### extract pixels
+  v<-velox(subset(r,y))
+  e<-v$extract(cells)
+  le<-lapply(e,function(i){
+    tab<-table(i[,1])	
+    as.data.frame(rbind(tab/sum(tab)))
+  })
 
-##########################################################
-### bind cells data and fill unrepresented classes
+  ##########################################################
+  ### bind cells data and fill unrepresented classes
 
-lu<-rbindlist(le,fill=TRUE)
-for(i in names(lu)){ 
-  set(lu,i=which(is.na(lu[[i]])),j=i,value=0)
-}
-names(lu)<-aci$Code[match(names(lu),aci$ACI)]
-
-
-############################################################
-### combine columns of the same classes with an ugly hack (should use something with data.table
-clu<-unique(names(lu))
-temp<-list()
-for(i in seq_along(clu)){
-  m<-which(names(lu)%in%clu[i])
-  if(length(m)>1){
-    temp[[i]]<-rowSums(lu[,..m])
-  }else{
-    temp[[i]]<-lu[[m]]	
+  lu<-rbindlist(le,fill=TRUE)
+  for(i in names(lu)){ 
+    set(lu,i=which(is.na(lu[[i]])),j=i,value=0)
   }
-}
-lu<-do.call("data.table",temp)
-names(lu)<-clu
-lu$cell<-locs$cell
-table(rowSums(lu[,1:(ncol(lu)-1)]),useNA="ifany")
+  names(lu)<-aci$Code[match(names(lu),aci$ACI)]
 
+  ############################################################
+  ### combine columns of the same classes with an ugly hack (should use something with data.table
+  clu<-unique(names(lu))
+  temp<-list()
+  for(i in seq_along(clu)){
+    m<-which(names(lu)%in%clu[i])
+    if(length(m)>1){
+      temp[[i]]<-rowSums(lu[,..m])
+    }else{
+      temp[[i]]<-lu[[m]]	
+    }
+  }
+  lu<-do.call("data.table",temp)
+  names(lu)<-paste0(clu,gsub("X","",names(r)[y]))
+  table(rowSums(lu[,1:(ncol(lu)-1)]),useNA="ifany")
+  lus[[y]]<-lu
+
+}
+  
+lu<-do.call("cbind",unname(lus))
+lu$cell<-locs$cell
 
 ####################################
 ### add data to the locs data and to the data
 
 locs@data<-cbind(locs@data,lu)
-plot(locs,pch=16,cex=locs$AGR*2)
+plot(locs,pch=16,cex=locs$AGR2015*2)
 
 d<-merge(d,lu)
+
+
+### create new columns with single name and no years. Works only for two possibilities!
+keep<-apply(abs(cbind(d$year-luy[1],d$year-luy[2])),1,which.min)
+for(i in clu){ 
+  d[,c(i):=ifelse(keep==1,d[[paste0(i,luy[1])]],d[[paste0(i,luy[2])]])]
+}
 d$FFM<-d$FFE+d$FMX
 
 
 #####################################
 ### create prediction grid
 #####################################
+
+### for prediction, only use the latest LU year
 
 ext<-1 # 1 cell extension over the observation grid
 inc<-1 # increase resolution of prediction grid by this factor compared to original grid
@@ -258,7 +281,7 @@ plot(grid,add=TRUE,border="red")
 points(coordinates(grid),col="red")
 points(spTransform(locs,CRS(proj4string(r))))
 
-v<-velox(r)
+v<-velox(subset(r,nlayers(r)))
 e<-v$extract(grid)
 le<-lapply(e,function(i){
   tab<-table(i[,1])	
